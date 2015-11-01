@@ -10,13 +10,14 @@
 接下来就以上的方法，一个一个实践来练习吧！
 
 ##自定义UI（利用View）
-&emsp;利用View实现自定义主要是继承View并利用OnDraw(Canvas canvas)方法绘制自己需要的UI。利用canvas主要可以绘制矩形(包括圆角矩形)、圆、点、线、扇形等，同时还可以根据类[Path](http://developer.android.com/reference/android/graphics/Path.html)设置需要的路径，利用Canvas将Path绘制出来。具体的使用通过实践学习吧。今天利用View实现如下的效果：
+&emsp;利用View实现自定义主要是继承View并利用OnDraw(Canvas canvas)方法绘制自己需要的UI。利用canvas主要可以绘制矩形(包括圆角矩形)、圆、点、线、扇形等，同时还可以根据类[Path](http://developer.android.com/reference/android/graphics/Path.html)设置需要的路径，利用Canvas将Path绘制出来。具体的使用通过实践学习吧。今天利用View实现如下的效果(gif 效果不是很好0_0)：
   
   ![alt tag](/Resource/jianshu.gif)
   
 ###分解效果图
 &emsp;动画效果的某个瞬间的静态UI如下所示：
   
+  ![alt tag](/Resource/static.png)
   
 通过这个静态的UI，可以看出它的组成很简单：一个大圆，一个实心的小圆————这个小圆的中心点是在大圆的圆环上。这样就把这个静态的UI分解为：一个大圆和一个小圆。
   
