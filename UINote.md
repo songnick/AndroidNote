@@ -5,7 +5,7 @@
 
 2.继承ViewGroup，根据ViewGroup的绘制流程实现自己需要的效果。
 
-3.利用已有的UI控件(RelativeLayout,LinearLayout,FrameLayout....)。
+3.利用已有的UI控件(RelativeLayout,LinearLayout,FrameLayout....)，继承改造或者组合使用等。
 
 接下来就以上的方法，一个一个实践来练习吧！
 
@@ -111,4 +111,4 @@
 
 ![alt tag](/Resource/practice.png)
 
-PS:后面我们将介绍如何利用ViewGroup和RLF(RelativeLayout LinearLayout FrameLayout)自定义。
+PS:后面我们将介绍如何利用ViewGroup和RLF...(RelativeLayout LinearLayout FrameLayout....)自定义。
