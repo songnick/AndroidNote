@@ -111,4 +111,4 @@
 
 ![alt tag](/Resource/practice.png)
 
-PS:后面我们将介绍如何利用ViewGroup和RLF(RelativeLayout LinearLayout FrameLayout)自动定义。
+PS:后面我们将介绍如何利用ViewGroup和RLF(RelativeLayout LinearLayout FrameLayout)自定义。
