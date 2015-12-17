@@ -12,3 +12,5 @@
 2.内存泄漏。
 
 3.
+
+![alt tag](/Resource/android-binder-ipc.pdf)
