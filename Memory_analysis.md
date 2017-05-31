@@ -251,7 +251,7 @@
 
 上面的主要功能就是读取native、dalvik以及so等类型关于pss、private_dirty、shared_dirty的内存信息；最终存储在stats数组中。
 
-&esp;通过上面的分析，获取到了native heap 以及 native、dalvik、so等的pss、priveDirtyPss、sharedDirtyPss等相关信息，我们回到ActivityThread中的ApplicationThread的dumpMemInfo()方法，在获得这些信息以后就会打印这些信息：
+&emsp;通过上面的分析，获取到了native heap 以及 native、dalvik、so等的pss、priveDirtyPss、sharedDirtyPss等相关信息，我们回到ActivityThread中的ApplicationThread的dumpMemInfo()方法，在获得这些信息以后就会打印这些信息：
 
 		// otherwise, show human-readable format，这里是打印内存信息的头部信息
 		printRow(pw, HEAP_COLUMN, "", "", "Shared", "Private", "Heap", "Heap", "Heap");
