@@ -4,10 +4,10 @@
 
 获取对应应用的详细内存信息，一般我们会获取到如下信息(对于不同的Android版本以及不同厂商的ROM，以下信息会有一些差异)：
 
-![android_mem](http://upload-images.jianshu.io/upload_images/1098335-95a37c2c15b02a81.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-对于这些参数刚开始看到的时候比较晕，其中很多的内容不是非常的了解，也不了解这些数据来自于哪里，现在我希望通过源码分析的方式，找到这些数据来自于哪里，然后再分析它们的具体含义。
+![android_mem](/Resource/android_mem.png)
+对于这些参数刚开始看到的时候比较晕，其中很多的内容不是非常的了解，也不了解这些数据来自于哪里，这里希望通过源码分析的方式，找到这些数据来自于哪里，然后再分析它们的具体含义。
 
-&emsp;对于 [dumpsys](http://androidxref.com/4.2.2_r1/xref/frameworks/native/cmds/dumpsys/dumpsys.cpp) 这个命令我们可以在[androidxref.com](androidxref.com)中很容易的搜到它的源码，部分代码如下所示：
+&emsp;对于 [dumpsys](http://androidxref.com/4.2.2_r1/xref/frameworks/native/cmds/dumpsys/dumpsys.cpp) 这个命令我们可以在[androidxref.com](androidxref.com)中的[/frameworks/native/cmds/dumpsys/](http://androidxref.com/4.4_r1/xref/frameworks/native/cmds/dumpsys/)找到它的源码实现，部分代码如下所示：
 
 		Vector<String16> services;
 	    Vector<String16> args;
@@ -30,7 +30,7 @@
 
 		int err = service->dump(STDOUT_FILENO, args);
 
-这里就调用到了service的dump方法了，其中args存放的是dumpsys后面的参数；对于这个sm(ServiceManager)对象是Android系统中管理Service的类(其实它自己本身也是一个Service)，对于一般的Service都是通过调用Java层的ServiceManager类操作，我们通过搜索调用
+这里就调用到了service的dump方法了，其中args存放的是[dumpsys meminfo]命令后面的参数；对于这个sm(ServiceManager)对象是Android系统中管理Service的类(其实它自己本身也是一个Service)，对于一般的Service都是通过调用Java层的ServiceManager类中的add()方法将Service添加到ServiceManager中(这里有关Binder部分的内容大家可以自行学习一下)，我们通过搜索调用
 
 	ServiceManager.addService(String name, IBinder service);
 
@@ -43,7 +43,7 @@
 		ServiceManager.addService("gfxinfo", new GraphicsBinder(m));
 		ServiceManager.addService("dbinfo", new DbBinder(m));
 
-这里可以很清晰的看到调用ServiceManager的addServcie()方法，将ActivityManagerService、MemBinder等添加到了ServiceManager中，找到这里我们终于发现了我们的meminfo对于的Service——MemBinder。这里的MemBinder其实是继承Binder，并重写了dump()方法：
+这里可以很清晰的看到调用ServiceManager的addServcie()方法，将ActivityManagerService、MemBinder等添加到了ServiceManager中，找到这里我们终于发现了我们的meminfo对应的Service——MemBinder。这里的MemBinder其实是继承Binder，并重写了dump()方法：
 
           
 	protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
@@ -133,7 +133,7 @@
 	        Debug.getMemoryInfo(r.pid, mi);
 	    }
 
-在上面的内存获取的过程中，一般dumpAll为true，所以会调用Process.thread参数，这里的thread为IApplcationThread对象，对于熟悉Activity的过程对于这个接口并不陌生(如果不是很清楚可以自行补补哈)，这个最终存储的是ActivityThread中的ApplicationThread对象(这里如果不是很理解可以参考一下Android中[App启动过程的分析](http://blog.csdn.net/luoshengyang/article/details/6689748))，这里直接调用了该对象的dumpMeminfo()方法(ActivityThread中的ApplicationThread)：
+在上面的内存获取的过程中，一般dumpAll为true，所以会调用Process.thread参数，这里的thread为IApplcationThread对象，对于熟悉Activity启动过程的同学对于这个接口并不陌生(如果不是很清楚可以自行补补哈)，这个最终存储的是ActivityThread中的ApplicationThread对象(这里如果不是很理解可以参考一下Android中[App启动过程的分析](http://blog.csdn.net/luoshengyang/article/details/6689748))，这里直接调用了该对象的dumpMeminfo()方法(ActivityThread中的ApplicationThread)：
 
 		long nativeMax = Debug.getNativeHeapSize() / 1024;
 	    long nativeAllocated = Debug.getNativeHeapAllocatedSize() / 1024;
@@ -149,7 +149,7 @@
 	    long dalvikAllocated = dalvikMax - dalvikFree;
 	    ...........
 
-这部分的内容主要是获取java heap和native heap相关的内存信息，通过这部分内容，我们可以看到native heap信息的获取是通过Debug类中的静态方法获取的，对于java heap的内存信息是通过Runtime类中的静态方法获取到的，对于java heap的内存信息的获取还是比较简单的。对于native heap可能就比较的复杂，Debug中的调用的静态方法为native方法，这部分的JNI实现在[android_os_Debug.cpp](http://androidxref.com/4.2.2_r1/xref/frameworks/base/core/jni/android_os_Debug.cpp)中，这里需要看看getMemoryInfo()方法的实现：
+这部分的内容主要是获取java heap和native heap相关的内存信息，通过这部分内容，我们可以看到native heap信息的获取是通过Debug类中的静态方法获取的，java heap的内存信息是通过Runtime类中的静态方法获取到的，java heap的内存信息的获取还是比较简单的。对于native heap可能就比较的复杂，Debug中的调用的静态方法为native方法，这部分的JNI实现在[android_os_Debug.cpp](http://androidxref.com/4.2.2_r1/xref/frameworks/base/core/jni/android_os_Debug.cpp)中，这里同时需要看看getMemoryInfo()方法的实现，因为通过调用该方法可以获取[Debug.MemoryInfo](http://androidxref.com/4.2.2_r1/xref/frameworks/base/core/java/android/os/Debug.java#110)的信息，该类包含了dalvikPss、nativePss以及so.mmap等内存信息：
 
 	//JNI方法注册过程中java层方法与native方法的对应关系，关于这部分不是很懂的，可以参考
 	//获取native heap相关的信息
@@ -173,7 +173,7 @@
 		#endif
 		}
 
-其他的获取native的内存类似，对于getMemoryInfo()的方法对应的，实现方法如下：
+其他的获取native的内存类似，对于getMemoryInfo()的方法对应的实现如下：
 
 		static void android_os_Debug_getDirtyPages(JNIEnv *env, jobject clazz, jobject object)
 		{
@@ -297,7 +297,7 @@
 2.内存的获取：
 
 		java heap：
-				Dalvik Pss:	Debug.MemoryInfo.dalvikPss
+				Dalvik Pss:	Debug.MemoryInfo.dalvikPss// /proc/pid/smaps中获取
 				Dalvik SharedPrivateDirty:	Debug.MemoryInfo.dalvikSharedDirty
 				......
 				Dalvik Size: Runtime.totalMemory()
@@ -317,5 +317,5 @@
 这里Debug.MemoryInfo相关的信息主要通过读取/proc/PID/smaps文件中的信息，对于native size、alloc以及free主要是通过调用[android_os_Debug.cpp](http://androidxref.com/4.2.2_r1/xref/frameworks/base/core/jni/android_os_Debug.cpp)中的方法，最后调用
 [mallinfo()](http://man7.org/linux/man-pages/man3/mallinfo.3.html)方法获取，java层的size、alloc、以及free主要是根据Runtime来获取；
 
-&emsp;以上所有的分析都是基于4.4.2的源码进行分析的，这里我只是简单的分析了一下命令行是怎么获取到这些信息的，但是并没有详细的分析内存的来源以及原理，这部分是可以继续深究的！
+&emsp;以上所有的分析都是基于4.4.2的源码进行分析的，这里我只是简单的分析了一下命令行是怎么获取到这些信息的，但是并没有详细的内存的来源以及原理并没有深究(smaps里面的内容)，这部分是可以继续深究的，后面希望可以对这部分内容进行详细的研究。
 
