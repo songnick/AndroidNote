@@ -4,9 +4,10 @@
 
 获取对应应用的详细内存信息，一般我们会获取到如下信息(对于不同的Android版本以及不同厂商的ROM，以下信息会有一些差异)：
 
+![android_mem](http://upload-images.jianshu.io/upload_images/1098335-95a37c2c15b02a81.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 对于这些参数刚开始看到的时候比较晕，其中很多的内容不是非常的了解，也不了解这些数据来自于哪里，现在我希望通过源码分析的方式，找到这些数据来自于哪里，然后再分析它们的具体含义。
 
-&emsp;对于 [dumpsys](http://androidxref.com/4.2.2_r1/xref/frameworks/native/cmds/dumpsys/dumpsys.cpp) 这个命令我们可以在androidxref.com中很容易的搜到它的源码，部分代码如下所示：
+&emsp;对于 [dumpsys](http://androidxref.com/4.2.2_r1/xref/frameworks/native/cmds/dumpsys/dumpsys.cpp) 这个命令我们可以在[androidxref.com](androidxref.com)中很容易的搜到它的源码，部分代码如下所示：
 
 		Vector<String16> services;
 	    Vector<String16> args;
@@ -315,3 +316,6 @@
 
 这里Debug.MemoryInfo相关的信息主要通过读取/proc/PID/smaps文件中的信息，对于native size、alloc以及free主要是通过调用[android_os_Debug.cpp](http://androidxref.com/4.2.2_r1/xref/frameworks/base/core/jni/android_os_Debug.cpp)中的方法，最后调用
 [mallinfo()](http://man7.org/linux/man-pages/man3/mallinfo.3.html)方法获取，java层的size、alloc、以及free主要是根据Runtime来获取；
+
+&emsp;以上所有的分析都是基于4.4.2的源码进行分析的，这里我只是简单的分析了一下命令行是怎么获取到这些信息的，但是并没有详细的分析内存的来源以及原理，这部分是可以继续深究的！
+
